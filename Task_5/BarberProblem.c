@@ -6,8 +6,6 @@
 #include <pthread.h>
 #include <semaphore.h>
 
-#include <windows.h>
-
 #define NBRCLIENT 2
 #define NBRSEAT 2
 
@@ -53,14 +51,14 @@ int main()
     for (int i = 0 ; i < NBRCLIENT ; i++)
     {
         pthread_create(&clientThread[i], NULL, clientFunction, (void *)&idArray[i]);
-        Sleep(1000);
+        sleep(1);
     }
 
 //Join all client threads
     for (int i = 0 ; i < NBRCLIENT ; i++)
     {
         pthread_join(clientThread[i], NULL);
-        Sleep(1000);
+        sleep(1);
     }
 
 //When all the client are served
@@ -75,7 +73,7 @@ void *clientFunction(void *id)
 
 //Client leave home and go to the barber shop
     printf("Client [%d] leaving home.\n", ID);
-    Sleep(2000);
+    sleep(2);
     printf("Client [%d] enter the barber shop.\n", ID);
 
 //Client wait a seat in the waiting room
@@ -111,7 +109,7 @@ void *barberFunction()
         {
         //Barber take care of the client
             printf("Barber is cutting hair...\n");
-            Sleep(2000);
+            sleep(2);
             printf("Barber has finished is job.\n");
 
         //Release the client
