@@ -8,10 +8,8 @@
 
 #include <stdbool.h>
 
-#include <windows.h>
-
-#define NBRCLIENT 5     //Number of clients
-#define NBRSEAT 2       //Number of seat in the waiting room
+#define NBRCLIENT 3     //Number of clients
+#define NBRSEAT 1       //Number of seat in the waiting room
 #define NBRBARBERM 1    //Number of barbers for man
 #define NBRBARBERW 1    //Number of barbers for woman
 #define NBRBARBERB 0    //Number of barbers for both
@@ -45,9 +43,11 @@ bool NMC = false; //NMC stand for No More Client, this variale is to end the pro
 //==========================================================================================
 int main()
 {
+    srand(time(NULL));
+
     printf("Number of clients: %d\n", NBRCLIENT);
     printf("Number of seats in the waiting room: %d\n\n", NBRSEAT);
-    printf("Number of barbers:\n\tMan: %d\n\tWomen: %d\n\t Both: %d\n\n", NBRBARBERM, NBRBARBERW, NBRBARBERB);
+    printf("Number of barbers:\n\tMan: %d\n\tWomen: %d\n\tBoth: %d\n\n", NBRBARBERM, NBRBARBERW, NBRBARBERB);
 
 //Declaration of variable
     pthread_t barberThreadM[NBRBARBERM];
@@ -112,18 +112,20 @@ int main()
         pthread_create(&barberThreadB[i], NULL, barberFunctionB, &idArrayBarberB[i]);
     }
 
+    sleep(1);
+
 //Creation of clients
     for (int i = 0 ; i < NBRCLIENT ; i++)
     {
         pthread_create(&clientThread[i], NULL, clientFunction, &idArrayClient[i]);
-        Sleep(1000);
+        sleep(1);
     }
 
 //Join all client threads
     for (int i = 0 ; i < NBRCLIENT ; i++)
     {
         pthread_join(clientThread[i], NULL);
-        Sleep(1000);
+        sleep(1);
     }
 
 //When all the client are served
@@ -168,18 +170,19 @@ void *clientFunction(void *id)
 //Define sex of the client
     if (attribute == 0)
     {
-        sex = 'F';
         attribute = 1;
+        sex = 'W';
     }
     else
     {
-        sex = 'M';
         attribute = 0;
+        sex = 'M';
     }
 
 
 //Client leave home and go to the barber shop
     printf("Client [%c%d] leaving home.\n", sex, ID);
+    sleep(rand()%4);
     printf("Client [%c%d] enter the barber shop.\n", sex, ID);
 
 //Can the client seat in the waiting room ?
@@ -266,32 +269,31 @@ void *clientFunction(void *id)
             }while(freeChairW == 0 && freeChairB == 0);
         }
 
+    //Wait the end of the barber's work
+        sem_wait(&freeChair);
+
+    //Free the barber chair
+        if (BB == true)
+        {
+            sem_post(&barberChairB); //Free a chair for both
+        }
+        else
+        {
+            if (sex = 'M')
+            {
+                sem_post(&barberChairM); //Free a chair for Man
+            }
+            if (sex = 'W')
+            {
+                sem_post(&barberChairW); //Free a chair for Woman
+            }
+        }
+        printf("Customer [%c%d] leaving barber shop.\n", sex, ID);
     }
     else
     {
-        printf("No more seat available in the waiting. The client [%c%d] go home.", sex, ID);
+        printf("No more seat available in the waiting. The client [%c%d] go home.\n", sex, ID);
     }
-
-//Wait the end of the barber's work
-    sem_wait(&freeChair);
-
-//Free the barber chair
-    if (BB == true)
-    {
-        sem_post(&barberChairB); //Free a chair for both
-    }
-    else
-    {
-        if (sex = 'M')
-        {
-            sem_post(&barberChairM); //Free a chair for Man
-        }
-        if (sex = 'W')
-        {
-            sem_post(&barberChairW); //Free a chair for Woman
-        }
-    }
-    printf("Customer [%c%d] leaving barber shop.\n", sex, ID);
 }
 //==========================================================================================
 //==========================================================================================
@@ -311,9 +313,9 @@ void *barberFunctionM(void *id)
         if (!NMC)
         {
         //Barber take care of the client
-            printf("Barber [%d] is cutting hair...\n", ID);
-            Sleep(2000);
-            printf("Barber [%d] has finished is job.\n", ID);
+            printf("Barber [%c%d] is cutting hair...\n", typeClient, ID);
+            sleep(rand()%7);
+            printf("Barber [%c%d] has finished is job.\n", typeClient, ID);
 
         //Release the client
             sem_post(&freeChair);
@@ -341,9 +343,9 @@ void *barberFunctionW(void *id)
         if (!NMC)
         {
         //Barber take care of the client
-            printf("Barber [%d] is cutting hair...\n", ID);
-            Sleep(2000);
-            printf("Barber [%d] has finished is job.\n", ID);
+            printf("Barber [%c%d] is cutting hair...\n", typeClient, ID);
+            sleep(rand()%10);
+            printf("Barber [%c%d] has finished is job.\n", typeClient, ID);
 
         //Release the client
             sem_post(&freeChair);
@@ -371,9 +373,9 @@ void *barberFunctionB(void *id)
         if (!NMC)
         {
         //Barber take care of the client
-            printf("Barber [%d] is cutting hair...\n", ID);
-            Sleep(2000);
-            printf("Barber [%d] has finished is job.\n", ID);
+            printf("Barber [%c%d] is cutting hair...\n", typeClient, ID);
+            sleep(rand()%8);
+            printf("Barber [%c%d] has finished is job.\n", typeClient, ID);
 
         //Release the client
             sem_post(&freeChair);
