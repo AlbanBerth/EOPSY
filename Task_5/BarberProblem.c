@@ -34,7 +34,7 @@ sem_t barberAwakeB; //Define if the barber is awake (1==yes ; 0==no)
 sem_t freeChair; //Use to make client wait until the barber finish is job
 
 bool NMC = false; //NMC stand for No More Client, this variale is to end the program when all clients are served
-
+int attribute = 0; //Use to define the sex of the client (0==Man ; 1==Woman)
 
 //==========================================================================================
 //==========================================================================================
@@ -118,14 +118,12 @@ int main()
     for (int i = 0 ; i < NBRCLIENT ; i++)
     {
         pthread_create(&clientThread[i], NULL, clientFunction, &idArrayClient[i]);
-        sleep(1);
     }
 
 //Join all client threads
     for (int i = 0 ; i < NBRCLIENT ; i++)
     {
         pthread_join(clientThread[i], NULL);
-        sleep(1);
     }
 
 //When all the client are served
@@ -157,7 +155,6 @@ int main()
 void *clientFunction(void *id)
 {
     int ID = *(int *) id;
-    int attribute = 0;
     int freeSeats;
     char sex;
 
@@ -178,7 +175,6 @@ void *clientFunction(void *id)
         attribute = 0;
         sex = 'M';
     }
-
 
 //Client leave home and go to the barber shop
     printf("Client [%c%d] leaving home.\n", sex, ID);
