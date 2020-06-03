@@ -2,6 +2,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include <sys/types.h> 
 #include <sys/stat.h> 
@@ -12,19 +13,20 @@
 
 void copy_mmap(char* fd_from, char* fd_to);
 void copy_read_write(char* fd_from, char* fd_to);
+bool fileExists(const char * filename);
 
 
 int main(int totArg, char *argv[])
 {
-	if (totArg >= 2)
+	if (totArg > 2)
 	{
-		if (strcmp(argv[1], "-m") == 0 && totArg == 4) // ./copy.out -m file copyfile
+		if (strcmp(argv[1], "-m") == 0 && totArg == 4 && fileExists(argv[2]) == true) // ./copy.out -m file copyfile
 		{
 			copy_mmap(argv[2], argv[3]);
 			return 0;
 		}
 
-		if (strcmp(argv[1], "-m") != 0 && strcmp(argv[1], "-h") != 0 && totArg == 3) // ./copy.out fil copyfile
+		if (strcmp(argv[1], "-m") != 0 && strcmp(argv[1], "-h") != 0 && totArg == 3 && fileExists(argv[1]) == true) // ./copy.out fil copyfile
 		{
 			copy_read_write(argv[1], argv[2]);
 			return 0;
@@ -39,6 +41,7 @@ int main(int totArg, char *argv[])
 	printf("\t\t-m : copy the file with memcpy()\n");
 	printf("\t\tjust with files' name: copy the file with read() and write()\n");
 	printf("\t\t-h : display this help\n");
+	printf("\nIf you see this help without ask for it it is maybe because the file to copy doesn't exist or you put invalide argument.\n");
 
 	return 0;
 }
@@ -92,4 +95,17 @@ void copy_read_write(char* fd_from, char* fd_to)
 
     close(source);
     close(destination);
+}
+
+
+bool fileExists(const char * filename)
+{
+    FILE *file;
+    
+    if (file = fopen(filename, "r"))
+    {
+        fclose(file);
+        return true;
+    }
+    return false;
 }
